@@ -8,7 +8,6 @@
 
 ftpVar=$(dpkg -l | grep ftp)
 ufwVar=$(dpkg -l | grep ufw)
-varFtpUser=0
 
 # -------- Dependency --------
 
@@ -50,7 +49,6 @@ sudo ufw allow 40000:50000/tcp
 read -p "Create new user as dedicated FTP user? [YES/no] " varNewUser
 if [[ -z $varNewUser ]] || [[ $varNewUser =~ [Yy] ]]
 then
-	varFtpUser=1
 	read -p "Name of the FTP user? " varNameUser
 	if [[ -z $varNameUser ]]
 	then
@@ -65,20 +63,16 @@ else
 fi
 
 # setup chroot folder
-if [[ $varNewUser -eq 1 ]]
-then
-	# using new user
-	# creating new ftp folder
-	sudo mkdir /home/$varNameUser/ftp
-	# set ownership new ftp folder
-    sudo chown nobody:nogroup /home/$varNameUser/ftp
-	# remove write permissions new ftp folder
-    sudo chmod a-w /home/$varNameUser/ftp
-	# create the directory for file uploads
-    sudo mkdir /home/$varNameUser/ftp/files
-    # assign ownership to the user
-    sudo chown $varNameUser:$varNameUser /home/$varNameUser/ftp/files
-fi
+# creating new ftp folder
+sudo mkdir /home/$varNameUser/ftp
+# set ownership new ftp folder
+sudo chown nobody:nogroup /home/$varNameUser/ftp
+# remove write permissions new ftp folder
+sudo chmod a-w /home/$varNameUser/ftp
+# create the directory for file uploads
+sudo mkdir /home/$varNameUser/ftp/files
+# assign ownership to the user
+sudo chown $varNameUser:$varNameUser /home/$varNameUser/ftp/files
 
 # altering configuration file /etc/vsftpd.conf to set security for FTP access
 sed -i 's/anonymous_enable=YES/anonymous_enable=NO/g' /etc/vsftpd.conf
