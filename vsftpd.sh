@@ -21,10 +21,10 @@ else
 fi
 
 # check if there is an FTP server installed
-if [[ ! -z $ftpVar ]]
+if [[ -z $ftpVar ]]
 then
-	echo "There is already an FTP program installed!"
-	exit 1
+	echo "FTP server is not installed....installing!"
+	sudo apt update && sudo apt install vsftpd -y
 fi
 
 # check if UFW firewall is installed
