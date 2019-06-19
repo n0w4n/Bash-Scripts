@@ -46,9 +46,6 @@ sudo ufw allow 21/tcp
 sudo ufw allow 990/tcp
 sudo ufw allow 40000:50000/tcp
 
-# checking status of UFW allowed ports
-sudo ufw status
-
 # ask if new FTP user is needed or use current user
 read -p "Create new user as dedicated FTP user? [YES/no] " varNewUser
 if [[ -z $varNewUser ]] || [[ $varNewUser =~ [Yy] ]]
