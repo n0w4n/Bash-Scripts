@@ -1,2 +1,2 @@
 # Bash-Scripts
-Several Bash scripts to speed up things
+Several Bash scripts to speed things up.
