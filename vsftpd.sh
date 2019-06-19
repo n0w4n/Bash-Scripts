@@ -60,7 +60,7 @@ then
 		echo "No name was given!"
 		exit 1
 	else
-		sudo adduser -m -s /bin/bash $varNameUser
+		sudo useradd -m -s /bin/bash $varNameUser
 		sudo passwd $varNameUser
 	fi
 else
