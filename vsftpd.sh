@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script to install and configure an vsFTPd server
+# script to install and configure an vsFTPd server.
 # because this script will need to install programs
 # and configure certain files it need to run as root
 
@@ -16,8 +16,6 @@ if [[ ! $UID -eq 0 ]]
 then
 	echo "This script need to run as root!"
 	exit 1
-else
-	rootVar=1
 fi
 
 # check if there is an FTP server installed
