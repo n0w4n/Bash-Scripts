@@ -63,8 +63,10 @@ function preReq () {
 	fi
 
 	# updates system
-	header Updating system
+	header "${colorRed}"Updating system"${colorReset}"
+	echo "Updating repository"
 	sudo apt update &>/dev/null 
+	echo "Upgrading packages"
 	sudo apt upgrade -y &>/dev/null
 
 	# checks all the prerequisites
@@ -90,24 +92,28 @@ function preReq () {
 function installJava () {
 	header installing Java 8
 	# installs Java 8
-	sudo apt update &>/dev/null
+	echo "Installing openjdk-8-jre-headless package"
 	sudo apt install openjdk-8-jre-headless -y &>/dev/null
 
 	# Changing the env to the correct Java installation
-	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" &>/dev/null | sudo tee -a /etc/enviroment &>/dev/null
+	echo "Creating new java home variable"
+	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" | sudo tee -a /etc/enviroment
 	source /etc/enviroment
 }
 
 function installNginx () {
 	# install Nginx Server
 	header Installing Nginx Server
+	echo "Installing Nginx server packages"
 	sudo apt install nginx -y &>/dev/null
 	
 	# setting Nginx to auto-start
+	echo "Setting Nginx to auto-start"
 	sudo systemctl enable nginx
 
 	# changing Firewall rules
 	header Changing Firewall rules
+	echo "Setting allow rules for port 80"
 	sudo ufw allow 'Nginx HTTP'
 
 	# Setting up Server block for domain
@@ -148,22 +154,29 @@ EOF
 
 function installELK () {
 	# importing ElasticSearch PGP key
+	echo "Importing ElasticSearch PGP key"
 	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
 	# installing https transport package
+	echo "Installing https transport package"
 	sudo apt install apt-transport-https -y &>/dev/null
 
 	# saving repo definition to own sources.list
+	echo "Saving repo definition to own sources.list"
 	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
+	echo "Updating repository"
 	sudo apt update &>/dev/null
+	echo "Installing ElasticSearch packages"
 	sudo apt install elasticsearch -y &>/dev/null
 
 	# enabling ElasticSearch to auto-start
+	echo "Setting ElasticSearch to auto-start"
 	sudo systemctl enable elasticsearch.service
 
 	# starting ElasticSearch 
+	echo "Starting ElasticSearch"
 	sudo systemctl start elasticsearch.service	
 }
 
@@ -171,3 +184,6 @@ clear
 banner
 preReq
 installELK
+echo
+echo "Installion of all packages are complete"
+echo "Exiting"
