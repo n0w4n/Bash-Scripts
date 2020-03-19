@@ -10,6 +10,7 @@ varDomain="siem.mindef.nl"
 
 # Functions
 function banner () {
+	echo
 	echo "   ########################################"
 	echo "   ##                                    ##"
 	echo "   ##      SIEM Installation script      ##"
@@ -34,7 +35,18 @@ function header () {
   echo "$text"
 }
 
-function preReq () {\
+function preReq () {
+	# checking for the correct sudo rights
+	sudo -n true
+	if [[ $? -eq 1 ]]; then
+		header ${USER} has no passwordless sudo access
+		echo "If you want to change this, use 'sudo visudo' and change the following:"
+		echo "Change %sudo ALL=(ALL:ALL) ALL"
+		echo "To %sudo ALL=(ALL) NOPASSWD: ALL"
+		echo "Close the texteditor with CTRL+X"
+		exit 1
+	fi
+
 	# updates system
 	header Updating system
 	sudo apt update
@@ -42,12 +54,12 @@ function preReq () {\
 
 	# checks all the prerequisites
 	# Checking for Java 8
-	#which java*
+	which java
 	if [[ $? -eq 1 ]]; then
-		header Java 8 not found...installing Java 8
+		header Java not found...installing Java 8
 		installJava
 	else
-		header Java 8 was found
+		header Java was found
 	fi
 
 	# Checking for Nginx
@@ -94,7 +106,7 @@ function installNginx () {
 	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
-	cat << EOF > /var/www/${varDomain}/html
+	sudo bash -c 'cat << EOF > /var/www/${varDomain}/html
 <html>
     <head>
         <title>Welcome to ${varDomain}!</title>
@@ -103,9 +115,9 @@ function installNginx () {
         <h1>Success!  The ${varDomain} server block is working!</h1>
     </body>
 </html>
-EOF
+EOF'
 
-	cat << EOF > /etc/nginx/sites-available/${varDomain}
+	sudo bash -c 'cat << EOF > /etc/nginx/sites-available/${varDomain}
 server {
         listen 80;
         listen [::]:80;
@@ -119,7 +131,7 @@ server {
                 try_files $uri $uri/ =404;
         }
 }
-EOF
+EOF'
 
 	sudo ln -s /etc/nginx/sites-available/${varDomain} /etc/nginx/sites-enabled/
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
@@ -149,4 +161,4 @@ function installELK () {
 clear
 banner
 preReq
-installELK
+#installELK
