@@ -5,7 +5,7 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.9"
+versionNumber="1.9.1"
 varDomain="siem.local"
 colorReset='\e[0m'
 colorRed='\e[30m'
@@ -18,7 +18,6 @@ function banner () {
 #######################################################################
 ##                                                                   ##
 ##      SIEM Installation script (ElasticSearch, Kibana, Beat)       ##
-##                                                                   ##
 ##                                                                   ##
 ##      Created by n0w4n                                             ##
 ##                                                                   ##
@@ -39,45 +38,33 @@ function header () {
   echo -e "${colorOrange}${text}${colorReset}"
 }
 
-function redHeader () {
-  title="$*"
-  text=""
-
-  for i in $(seq ${#title} 59); do
-    text+="="
-  done
-  text+="[ $title ]====="
-  echo -e "${colorRed}${text}${colorReset}"
-}
-
 function preReq () {
+	# checks all the prerequisites
+	header Prerequisites
+
 	# checking for the correct sudo rights
 	sudo -n true &>/dev/null
 	if [[ $? -eq 1 ]]; then
-		redHeader ${USER} has no passwordless sudo access
-		echo "If you want to change this, use 'sudo visudo' and change the following:"
-		echo "Change: %sudo ALL=(ALL:ALL) ALL"
-		echo "To    : %sudo ALL=(ALL) NOPASSWD: ALL"
+		echo "${USER} needs passwordless sudo access"
+		echo "Use 'sudo visudo' and change the following:"
+		echo "%sudo ALL=(ALL:ALL) ALL"
+		echo "%sudo ALL=(ALL) NOPASSWD: ALL"
 		echo "Close the texteditor with CTRL+X and confirm with y"
-		header Exiting
+		echo "Exiting"
 		exit 1
 	fi
 
 	# updates system
-	header ${colorRed}Updating system${colorReset}
-	echo "Updating repository"
-	sudo apt update &>/dev/null 
-	echo "Upgrading packages"
-	sudo apt upgrade -y &>/dev/null
+	sudo apt update 
+	sudo apt upgrade -y
 
-	# checks all the prerequisites
 	# Checking for Java 8
 	which java &>/dev/null
 	if [[ $? -eq 1 ]]; then
-		header Java not found!
+		echo "Java not found!"
 		installJava
 	else
-		header Java was found
+		echo "Java is installed"
 	fi
 
 	# Checking for Nginx
@@ -86,18 +73,16 @@ function preReq () {
 		header Nginx not found!
 		installNginx
 	else
-		header Nginx was found
+		echo "Nginx is installed"
 	fi
 }
 
 function installJava () {
 	header installing Java 8
 	# installs Java 8
-	echo "Installing openjdk-8-jre-headless package"
-	sudo apt install openjdk-8-jre-headless -y &>/dev/null
+	sudo apt install openjdk-8-jre-headless -y
 
 	# Changing the env to the correct Java installation
-	echo "Creating new java home variable"
 	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" | sudo tee -a /etc/enviroment
 	source /etc/enviroment
 }
@@ -105,20 +90,15 @@ function installJava () {
 function installNginx () {
 	# install Nginx Server
 	header Installing Nginx Server
-	echo "Installing Nginx server packages"
-	sudo apt install nginx -y &>/dev/null
+	sudo apt install nginx -y
 	
 	# setting Nginx to auto-start
-	echo "Setting Nginx to auto-start"
-	sudo /bin/systemctl enable nginx &>/dev/null
+	sudo /bin/systemctl enable nginx
 
 	# changing Firewall rules
-	header Changing Firewall rules
-	echo "Setting allow rules for port 80"
 	sudo ufw allow 'Nginx HTTP'
 
 	# Setting up Server block for domain
-	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
 	sudo bash -c "cat > /var/www/${varDomain}/html/index.html" << EOF
@@ -148,36 +128,29 @@ server {
 }
 EOF
 
-	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/ &>/dev/null
+	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
-	echo "Restarting Nginx server"
 	sudo /bin/systemctl restart nginx
 }
 
 function installSiemApps () {
 	header Installing ElasticSearch
 	# importing ElasticSearch PGP key
-	echo "Importing ElasticSearch PGP key"
-	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add - &>/dev/null
+	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
 	# installing https transport package
-	echo "Installing https transport package"
-	sudo apt install apt-transport-https -y &>/dev/null
+	sudo apt install apt-transport-https -y
 
 	# saving repo definition to own sources.list
-	echo "Saving repo definition to own sources.list"
-	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list &>/dev/null
+	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
-	echo "Updating repository"
-	sudo apt update &>/dev/null
-	echo "Installing ElasticSearch packages (this can take some time)"
-	sudo apt install elasticsearch -y &>/dev/null
+	sudo apt update
+	sudo apt install elasticsearch -y
 
 	# installing Kibana
 	header Installing Kibana
 	sudo apt install kibana -y
-
 
 	# installing Logstash
 	header Installing Logstash
@@ -226,12 +199,13 @@ function installSiemApps () {
 	# reloading systemd
 	header Reloading services
 	sudo /bin/systemctl daemon-reload
+	echo "Done"
 
 	# starting and enabling systemd services
 	header Starting services
 
 	echo "Starting ElasticSearch"
-	sudo /bin/systemctl enable elasticsearch.service &>/dev/null
+	sudo /bin/systemctl enable elasticsearch.service
 	sudo /bin/systemctl start elasticsearch.service
 
 	echo "Starting Kibana"
@@ -273,6 +247,13 @@ function installSiemApps () {
 	sudo auditbeat setup --dashboards
 	sudo auditbeat setup --index-management
 	sudo auditbeat setup --pipelines
+}
+
+function lastStep () {
+	echo "$(tput setaf 1) ---- Now It's Your Turn: Finsh Configuration ----"
+	echo "$(tput setaf 3) 1. edit kibana.yml and change server.host to 0.0.0.0 so that you can connect to kibana from other systems http://IPADDRESS:5601"
+	echo "$(tput setaf 3) 2. edit elasticsearch.yml and change network.host to 0.0.0.0 so that other systems can send data to elasticsearch"
+	echo "$(tput setaf 3) 3. restart both services sudo /bin/systemctl restart elasticsearch kibana"	
 }
 
 clear
