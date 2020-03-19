@@ -5,36 +5,48 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.6"
+versionNumber="1.7"
 varDomain="siem.local"
 colorReset='\e[0m'
+colorRed='\e[30m'
 colorOrange='\e[33m'
 
 # Functions
 function banner () {
-	echo
-	echo "   ########################################"
-	echo "   ##                                    ##"
-	echo "   ##      SIEM Installation script      ##"
-	echo "   ##      ELK, Kibana, Beat             ##"
-	echo "   ##                                    ##"
-	echo "   ##      Created by n0w4n              ##"
-	echo "   ##                                    ##"
-	echo "   ########################################"
-    echo
-    echo "   Version: ${versionNumber}"
-    echo
+	echo -e "${colorOrange}
+	###########################################################################
+	##                                                                       ##
+	##          SIEM Installation script (ELK, Kibana, Beat)                 ##
+	##                                                                       ##
+	##                                                                       ##
+	##          Created by n0w4n                                             ##
+	##                                                                       ##
+	###########################################################################
+    
+     Version: ${versionNumber}
+     ${colorReset}"
 }
 
 function header () {
   title="$*"
   text=""
 
-  for i in $(seq ${#title} 70); do
+  for i in $(seq ${#title} 60); do
     text+="="
   done
   text+="[ $title ]====="
   echo -e "${colorOrange}${text}${colorReset}"
+}
+
+function redHeader () {
+  title="$*"
+  text=""
+
+  for i in $(seq ${#title} 60); do
+    text+="="
+  done
+  text+="[ $title ]====="
+  echo -e "${colorRed}${text}${colorReset}"
 }
 
 function preReq () {
@@ -46,7 +58,7 @@ function preReq () {
 		echo "Change: %sudo ALL=(ALL:ALL) ALL"
 		echo "To    : %sudo ALL=(ALL) NOPASSWD: ALL"
 		echo "Close the texteditor with CTRL+X and confirm with y"
-		header Exiting
+		redHeader Exiting
 		exit 1
 	fi
 
@@ -78,8 +90,7 @@ function preReq () {
 function installJava () {
 	header installing Java 8
 	# installs Java 8
-	sudo add-apt-repository ppa:webupd8team/java  &>/dev/null
-	sudo apt update  &>/dev/null
+	sudo apt update &>/dev/null
 	sudo apt install openjdk-8-jre-headless -y &>/dev/null
 
 	# Changing the env to the correct Java installation
