@@ -5,8 +5,10 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.0"
-varDomain="siem.mindef.nl"
+versionNumber="1.5"
+varDomain="siem.local"
+colorReset='\e[0m'
+colorOrange='\e[32m'
 
 # Functions
 function banner () {
@@ -32,7 +34,7 @@ function header () {
     text+="="
   done
   text+="[ $title ]====="
-  echo "$text"
+  echo -e "${colorOrange}${text}${colorReset}"
 }
 
 function preReq () {
@@ -49,8 +51,7 @@ function preReq () {
 
 	# updates system
 	header Updating system
-	sudo apt update
-	sudo apt upgrade -y
+	terminal -e 'sudo apt update && sudo apt upgrade -y'
 
 	# checks all the prerequisites
 	# Checking for Java 8
@@ -75,19 +76,11 @@ function preReq () {
 function installJava () {
 	# installs Java 8
 	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt update
-	sudo apt install openjdk-8-jre-headless -y
-
-	# If system has multiple Java installations 
-	# Change it to use 8 as default
-	header changing default settings Java
-	echo "Change the default settings to /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java"
-	read -p 'Press enter to continue... '
-	sudo update-alternatives --config java
+	terminal -e 'sudo apt update && sudo apt install openjdk-8-jre-headless -y'
 
 	# Changing the env to the correct Java installation
 	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" &>/dev/null | sudo tee -a /etc/enviroment
-	sudo source /etc/enviroment
+	source /etc/enviroment
 }
 
 function installNginx () {
@@ -143,13 +136,13 @@ function installELK () {
 	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
 	# installing https transport package
-	sudo apt install apt-transport-https -y
+	terminal -e 'sudo apt install apt-transport-https -y'
 
 	# saving repo definition to own sources.list
 	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
-	sudo apt update && sudo apt install elasticsearch -y
+	terminal -e 'sudo apt update && sudo apt install elasticsearch -y'
 
 	# enabling ElasticSearch to auto-start
 	sudo systemctl enable elasticsearch.service
@@ -161,4 +154,4 @@ function installELK () {
 clear
 banner
 preReq
-#installELK
+installELK
