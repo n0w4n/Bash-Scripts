@@ -5,7 +5,7 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.7"
+versionNumber="1.8"
 varDomain="siem.local"
 colorReset='\e[0m'
 colorRed='\e[30m'
@@ -14,14 +14,14 @@ colorOrange='\e[33m'
 # Functions
 function banner () {
 	echo -e "${colorOrange}
-###########################################################################
-##                                                                       ##
-##          SIEM Installation script (ELK, Kibana, Beat)                 ##
-##                                                                       ##
-##                                                                       ##
-##          Created by n0w4n                                             ##
-##                                                                       ##
-###########################################################################
+#######################################################################
+##                                                                   ##
+##      SIEM Installation script (ElasticSearch, Kibana, Beat)       ##
+##                                                                   ##
+##                                                                   ##
+##      Created by n0w4n                                             ##
+##                                                                   ##
+#######################################################################
    
   Version: ${versionNumber}
   ${colorReset}"
@@ -114,7 +114,7 @@ function installNginx () {
 	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
-	sudo bash -c "cat > /var/www/${varDomain}/html" << EOF
+	sudo bash -c "cat > /var/www/${varDomain}/html/index.html" << EOF
 <html>
     <head>
         <title>Welcome to ${varDomain}!</title>
