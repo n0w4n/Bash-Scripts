@@ -45,7 +45,7 @@ function preReq () {
 	# checking for the correct sudo rights
 	sudo -n true &>/dev/null
 	if [[ $? -eq 1 ]]; then
-		echo "${USER} needs passwordless sudo access"
+		echo "${colorRed}${USER} needs passwordless sudo access${colorReset}"
 		echo "Use 'sudo visudo' and change the following:"
 		echo "%sudo ALL=(ALL:ALL) ALL"
 		echo "%sudo ALL=(ALL) NOPASSWD: ALL"
