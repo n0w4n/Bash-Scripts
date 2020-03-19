@@ -10,16 +10,17 @@ varDomain="siem.mindef.nl"
 
 # Functions
 function banner () {
-	echo "########################################"
-	echo "##                                    ##"
-	echo "##      SIEM Installation script      ##"
-	echo "##      ELK, Kibana, Beat             ##"
-	echo "##                                    ##"
-	echo "##      Created by n0w4n              ##"
-	echo "##                                    ##"
-	echo "########################################"
-
-    echo "Version: ${versionNumber}"
+	echo "   ########################################"
+	echo "   ##                                    ##"
+	echo "   ##      SIEM Installation script      ##"
+	echo "   ##      ELK, Kibana, Beat             ##"
+	echo "   ##                                    ##"
+	echo "   ##      Created by n0w4n              ##"
+	echo "   ##                                    ##"
+	echo "   ########################################"
+    echo
+    echo "   Version: ${versionNumber}"
+    echo
 }
 
 function header () {
@@ -41,8 +42,8 @@ function preReq () {\
 
 	# checks all the prerequisites
 	# Checking for Java 8
-	which java*
-	if [[ $? -eq 0 ]]; then
+	#which java*
+	if [[ $? -eq 1 ]]; then
 		header Java 8 not found...installing Java 8
 		installJava
 	else
@@ -51,7 +52,7 @@ function preReq () {\
 
 	# Checking for Nginx
 	which nginx
-	if [[ $? -eq 0 ]]; then
+	if [[ $? -eq 1 ]]; then
 		header Nginx not found...installing Nginx
 		installNginx
 	else
@@ -125,6 +126,24 @@ EOF
 	sudo systemctl restart nginx
 }
 
+function installELK () {
+	# importing ElasticSearch PGP key
+	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+	# installing https transport package
+	sudo apt install apt-transport-https -y
+
+	# saving repo definition to own sources.list
+	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+
+	# installing ElasticSearch
+	sudo apt update && sudo apt install elasticsearch -y
+
+	# enabling ElasticSearch to auto-start
+	sudo systemctl enable elasticsearch.service
+}
+
 clear
 banner
 preReq
+installELK
