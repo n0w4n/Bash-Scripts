@@ -76,7 +76,7 @@ function installJava () {
 	# installs Java 8
 	sudo add-apt-repository ppa:webupd8team/java
 	sudo apt update
-	sudo apt install oracle-java8-installer -y
+	sudo apt install openjdk-8-jre-headless -y
 
 	# If system has multiple Java installations 
 	# Change it to use 8 as default
@@ -106,7 +106,7 @@ function installNginx () {
 	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
-	sudo bash -c 'cat << EOF > /var/www/${varDomain}/html
+	cat << EOF | sudo tee -a /var/www/${varDomain}/html
 <html>
     <head>
         <title>Welcome to ${varDomain}!</title>
@@ -115,9 +115,9 @@ function installNginx () {
         <h1>Success!  The ${varDomain} server block is working!</h1>
     </body>
 </html>
-EOF'
+EOF
 
-	sudo bash -c 'cat << EOF > /etc/nginx/sites-available/${varDomain}
+	cat << EOF | sudo tee -a /etc/nginx/sites-available/${varDomain}
 server {
         listen 80;
         listen [::]:80;
@@ -131,7 +131,7 @@ server {
                 try_files $uri $uri/ =404;
         }
 }
-EOF'
+EOF
 
 	sudo ln -s /etc/nginx/sites-available/${varDomain} /etc/nginx/sites-enabled/
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
