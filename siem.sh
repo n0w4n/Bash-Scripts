@@ -5,10 +5,11 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.8.1"
+versionNumber="1.9"
 varDomain="siem.local"
 colorReset='\e[0m'
 colorRed='\e[30m'
+colorGreen='\e[31m'
 colorOrange='\e[33m'
 
 # Functions
@@ -31,7 +32,7 @@ function header () {
   title="$*"
   text=""
 
-  for i in $(seq ${#title} 60); do
+  for i in $(seq ${#title} 59); do
     text+="="
   done
   text+="[ $title ]====="
@@ -42,7 +43,7 @@ function redHeader () {
   title="$*"
   text=""
 
-  for i in $(seq ${#title} 60); do
+  for i in $(seq ${#title} 59); do
     text+="="
   done
   text+="[ $title ]====="
@@ -53,17 +54,17 @@ function preReq () {
 	# checking for the correct sudo rights
 	sudo -n true &>/dev/null
 	if [[ $? -eq 1 ]]; then
-		header ${USER} has no passwordless sudo access
+		redHeader ${USER} has no passwordless sudo access
 		echo "If you want to change this, use 'sudo visudo' and change the following:"
 		echo "Change: %sudo ALL=(ALL:ALL) ALL"
 		echo "To    : %sudo ALL=(ALL) NOPASSWD: ALL"
 		echo "Close the texteditor with CTRL+X and confirm with y"
-		redHeader Exiting
+		header Exiting
 		exit 1
 	fi
 
 	# updates system
-	header "${colorRed}"Updating system"${colorReset}"
+	header ${colorRed}Updating system${colorReset}
 	echo "Updating repository"
 	sudo apt update &>/dev/null 
 	echo "Upgrading packages"
@@ -71,7 +72,7 @@ function preReq () {
 
 	# checks all the prerequisites
 	# Checking for Java 8
-	which java
+	which java &>/dev/null
 	if [[ $? -eq 1 ]]; then
 		header Java not found!
 		installJava
@@ -80,7 +81,7 @@ function preReq () {
 	fi
 
 	# Checking for Nginx
-	which nginx
+	which nginx &>/dev/null
 	if [[ $? -eq 1 ]]; then
 		header Nginx not found!
 		installNginx
@@ -109,7 +110,7 @@ function installNginx () {
 	
 	# setting Nginx to auto-start
 	echo "Setting Nginx to auto-start"
-	sudo systemctl enable nginx &>/dev/null
+	sudo /bin/systemctl enable nginx &>/dev/null
 
 	# changing Firewall rules
 	header Changing Firewall rules
@@ -150,13 +151,14 @@ EOF
 	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/ &>/dev/null
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
 	echo "Restarting Nginx server"
-	sudo systemctl restart nginx
+	sudo /bin/systemctl restart nginx
 }
 
-function installELK () {
+function installSiemApps () {
+	header Installing ElasticSearch
 	# importing ElasticSearch PGP key
 	echo "Importing ElasticSearch PGP key"
-	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add - &>/dev/null
 
 	# installing https transport package
 	echo "Installing https transport package"
@@ -164,27 +166,120 @@ function installELK () {
 
 	# saving repo definition to own sources.list
 	echo "Saving repo definition to own sources.list"
-	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" &>/dev/null | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list &>/dev/null
 
 	# installing ElasticSearch
 	echo "Updating repository"
 	sudo apt update &>/dev/null
-	echo "Installing ElasticSearch packages"
+	echo "Installing ElasticSearch packages (this can take some time)"
 	sudo apt install elasticsearch -y &>/dev/null
 
-	# enabling ElasticSearch to auto-start
-	echo "Setting ElasticSearch to auto-start"
-	sudo systemctl enable elasticsearch.service &>/dev/null
+	# installing Kibana
+	header Installing Kibana
+	sudo apt install kibana -y
 
-	# starting ElasticSearch 
+
+	# installing Logstash
+	header Installing Logstash
+	sudo apt install logstash -y
+
+	# installing filebeat
+	header Installing Filebeat
+	curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.4.0-amd64.deb
+	sudo dpkg -i filebeat-7.4.0-amd64.deb
+	sudo rm filebeat*
+
+	# setting modules filebeat
+	sudo filebeat modules enable system
+	sudo filebeat modules enable cisco
+	sudo filebeat modules enable netflow
+	sudo filebeat modules enable osquery
+	sudo filebeat modules enable elasticsearch
+	sudo filebeat modules enable kibana
+	sudo filebeat modules enable logstash
+
+	# installing metricbeat
+	header Installing Metricbeat
+	curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-7.4.0-amd64.deb
+	sudo dpkg -i metricbeat-7.4.0-amd64.deb
+	sudo rm metricbeat*
+
+	# setting modules metricbeat
+	sudo metricbeat modules enable elasticsearch
+	sudo metricbeat modules enable kibana
+	sudo metricbeat modules enable logstash
+	sudo metricbeat modules enable system
+
+	# installing packetbeat
+	header Installing Packetbeat
+	sudo apt-get install libpcap0.8
+	curl -L -O https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-7.4.0-amd64.deb
+	sudo dpkg -i packetbeat-7.4.0-amd64.deb
+	sudo rm packetbeat*
+
+	# installing auditbeat
+	header Installing Auditbeat
+	curl -L -O https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-7.4.0-amd64.deb
+	sudo dpkg -i auditbeat-7.4.0-amd64.deb
+	sudo rm auditbeat*
+
+	# reloading systemd
+	header Reloading services
+	sudo /bin/systemctl daemon-reload
+
+	# starting and enabling systemd services
+	header Starting services
+
 	echo "Starting ElasticSearch"
-	sudo systemctl start elasticsearch.service	
+	sudo /bin/systemctl enable elasticsearch.service &>/dev/null
+	sudo /bin/systemctl start elasticsearch.service
+
+	echo "Starting Kibana"
+	sudo /bin/systemctl enable kibana.service
+	sudo /bin/systemctl start kibana.service
+
+	echo "Starting Logstash"
+	sudo /bin/systemctl enable logstash.service
+	sudo /bin/systemctl start logstash.service
+
+	echo "Starting Filebeat"
+	sudo /bin/systemctl enable filebeat
+	sudo /bin/systemctl start filebeat
+	sudo filebeat setup -e
+	sudo filebeat setup --dashboards
+	sudo filebeat setup --index-management
+	sudo filebeat setup --pipelines
+
+	echo "Starting Metricbeat"
+	sudo /bin/systemctl enable metricbeat
+	sudo /bin/systemctl start metricbeat
+	sudo metricbeat setup -e
+	sudo metricbeat setup --dashboards
+	sudo metricbeat setup --index-management
+	sudo metricbeat setup --pipelines
+
+	echo "Starting Packetbeat"
+	sudo /bin/systemctl enable packetbeat
+	sudo /bin/systemctl start packetbeat
+	sudo packetbeat setup -e
+	sudo packetbeat setup --dashboards
+	sudo packetbeat setup --index-management
+	sudo packetbeat setup --pipelines
+
+	echo "Starting Auditbeat"
+	sudo /bin/systemctl enable auditbeat
+	sudo /bin/systemctl start auditbeat
+	sudo auditbeat setup -e
+	sudo auditbeat setup --dashboards
+	sudo auditbeat setup --index-management
+	sudo auditbeat setup --pipelines
 }
 
 clear
 banner
 preReq
-installELK
-echo
-echo "Installion of all packages are complete"
+installSiemApps
+header Done
+echo "Installation of all packages are complete"
 echo "Exiting"
+exit
