@@ -5,7 +5,7 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.8"
+versionNumber="1.8.1"
 varDomain="siem.local"
 colorReset='\e[0m'
 colorRed='\e[30m'
@@ -109,7 +109,7 @@ function installNginx () {
 	
 	# setting Nginx to auto-start
 	echo "Setting Nginx to auto-start"
-	sudo systemctl enable nginx
+	sudo systemctl enable nginx &>/dev/null
 
 	# changing Firewall rules
 	header Changing Firewall rules
@@ -147,8 +147,9 @@ server {
 }
 EOF
 
-	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/
+	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/ &>/dev/null
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
+	echo "Restarting Nginx server"
 	sudo systemctl restart nginx
 }
 
@@ -163,7 +164,7 @@ function installELK () {
 
 	# saving repo definition to own sources.list
 	echo "Saving repo definition to own sources.list"
-	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" &>/dev/null | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
 	echo "Updating repository"
@@ -173,7 +174,7 @@ function installELK () {
 
 	# enabling ElasticSearch to auto-start
 	echo "Setting ElasticSearch to auto-start"
-	sudo systemctl enable elasticsearch.service
+	sudo systemctl enable elasticsearch.service &>/dev/null
 
 	# starting ElasticSearch 
 	echo "Starting ElasticSearch"
