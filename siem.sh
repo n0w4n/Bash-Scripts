@@ -8,7 +8,7 @@
 versionNumber="1.5"
 varDomain="siem.local"
 colorReset='\e[0m'
-colorOrange='\e[32m'
+colorOrange='\e[33m'
 
 # Functions
 function banner () {
@@ -39,19 +39,20 @@ function header () {
 
 function preReq () {
 	# checking for the correct sudo rights
-	sudo -n true
+	sudo -n true &>/dev/null
 	if [[ $? -eq 1 ]]; then
 		header ${USER} has no passwordless sudo access
 		echo "If you want to change this, use 'sudo visudo' and change the following:"
-		echo "Change %sudo ALL=(ALL:ALL) ALL"
-		echo "To %sudo ALL=(ALL) NOPASSWD: ALL"
-		echo "Close the texteditor with CTRL+X"
+		echo "Change: %sudo ALL=(ALL:ALL) ALL"
+		echo "To    : %sudo ALL=(ALL) NOPASSWD: ALL"
+		echo "Close the texteditor with CTRL+X and confirm with y"
+		header Exiting
 		exit 1
 	fi
 
 	# updates system
 	header Updating system
-	terminal -e 'sudo apt update && sudo apt upgrade -y'
+	sudo apt update && sudo apt upgrade -y
 
 	# checks all the prerequisites
 	# Checking for Java 8
@@ -66,7 +67,7 @@ function preReq () {
 	# Checking for Nginx
 	which nginx
 	if [[ $? -eq 1 ]]; then
-		header Nginx not found...installing Nginx
+		header Nginx not found!
 		installNginx
 	else
 		header Nginx was found
@@ -76,7 +77,7 @@ function preReq () {
 function installJava () {
 	# installs Java 8
 	sudo add-apt-repository ppa:webupd8team/java
-	terminal -e 'sudo apt update && sudo apt install openjdk-8-jre-headless -y'
+	sudo apt update && sudo apt install openjdk-8-jre-headless -y
 
 	# Changing the env to the correct Java installation
 	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" &>/dev/null | sudo tee -a /etc/enviroment
@@ -99,7 +100,7 @@ function installNginx () {
 	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
-	cat << EOF | sudo tee -a /var/www/${varDomain}/html
+	sudo bash -c 'cat > /var/www/${varDomain}/html' << EOF
 <html>
     <head>
         <title>Welcome to ${varDomain}!</title>
@@ -110,7 +111,7 @@ function installNginx () {
 </html>
 EOF
 
-	cat << EOF | sudo tee -a /etc/nginx/sites-available/${varDomain}
+	sudo bash -c 'cat > /etc/nginx/sites-available/${varDomain}' << EOF
 server {
         listen 80;
         listen [::]:80;
@@ -136,13 +137,13 @@ function installELK () {
 	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
 	# installing https transport package
-	terminal -e 'sudo apt install apt-transport-https -y'
+	sudo apt install apt-transport-https -y
 
 	# saving repo definition to own sources.list
 	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
-	terminal -e 'sudo apt update && sudo apt install elasticsearch -y'
+	sudo apt update && sudo apt install elasticsearch -y
 
 	# enabling ElasticSearch to auto-start
 	sudo systemctl enable elasticsearch.service
