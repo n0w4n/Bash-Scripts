@@ -5,7 +5,7 @@
 # This script was written and tested on Ubuntu Server 18.04 LTS
 
 # Global variables
-versionNumber="1.5"
+versionNumber="1.6"
 varDomain="siem.local"
 colorReset='\e[0m'
 colorOrange='\e[33m'
@@ -52,13 +52,14 @@ function preReq () {
 
 	# updates system
 	header Updating system
-	sudo apt update && sudo apt upgrade -y
+	sudo apt update &>/dev/null 
+	sudo apt upgrade -y &>/dev/null
 
 	# checks all the prerequisites
 	# Checking for Java 8
 	which java
 	if [[ $? -eq 1 ]]; then
-		header Java not found...installing Java 8
+		header Java not found!
 		installJava
 	else
 		header Java was found
@@ -75,19 +76,21 @@ function preReq () {
 }
 
 function installJava () {
+	header installing Java 8
 	# installs Java 8
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt update && sudo apt install openjdk-8-jre-headless -y
+	sudo add-apt-repository ppa:webupd8team/java  &>/dev/null
+	sudo apt update  &>/dev/null
+	sudo apt install openjdk-8-jre-headless -y &>/dev/null
 
 	# Changing the env to the correct Java installation
-	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" &>/dev/null | sudo tee -a /etc/enviroment
+	echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" &>/dev/null | sudo tee -a /etc/enviroment &>/dev/null
 	source /etc/enviroment
 }
 
 function installNginx () {
 	# install Nginx Server
 	header Installing Nginx Server
-	sudo apt install nginx -y
+	sudo apt install nginx -y &>/dev/null
 	
 	# setting Nginx to auto-start
 	sudo systemctl enable nginx
@@ -100,7 +103,7 @@ function installNginx () {
 	header Setting up Server Block
 	sudo mkdir -p /var/www/${varDomain}/html
 	sudo chown -R ${USER}:${USER} /var/www/${varDomain}/html
-	sudo bash -c 'cat > /var/www/${varDomain}/html' << EOF
+	sudo bash -c "cat > /var/www/${varDomain}/html" << EOF
 <html>
     <head>
         <title>Welcome to ${varDomain}!</title>
@@ -111,7 +114,7 @@ function installNginx () {
 </html>
 EOF
 
-	sudo bash -c 'cat > /etc/nginx/sites-available/${varDomain}' << EOF
+	sudo bash -c "cat > /etc/nginx/sites-available/${varDomain}" << EOF
 server {
         listen 80;
         listen [::]:80;
@@ -127,7 +130,7 @@ server {
 }
 EOF
 
-	sudo ln -s /etc/nginx/sites-available/${varDomain} /etc/nginx/sites-enabled/
+	sudo ln -s /etc/nginx/sites-available/"${varDomain}" /etc/nginx/sites-enabled/
 	sudo sed -i 's/#server_names_hash_bucket_size/server_names_hash_bucket_size/g' /etc/nginx/nginx.conf
 	sudo systemctl restart nginx
 }
@@ -137,13 +140,14 @@ function installELK () {
 	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
 	# installing https transport package
-	sudo apt install apt-transport-https -y
+	sudo apt install apt-transport-https -y &>/dev/null
 
 	# saving repo definition to own sources.list
 	echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
 	# installing ElasticSearch
-	sudo apt update && sudo apt install elasticsearch -y
+	sudo apt update &>/dev/null
+	sudo apt install elasticsearch -y &>/dev/null
 
 	# enabling ElasticSearch to auto-start
 	sudo systemctl enable elasticsearch.service
