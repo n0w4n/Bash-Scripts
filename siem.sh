@@ -141,6 +141,9 @@ function installELK () {
 
 	# enabling ElasticSearch to auto-start
 	sudo systemctl enable elasticsearch.service
+
+	# starting ElasticSearch 
+	sudo systemctl start elasticsearch.service	
 }
 
 clear
