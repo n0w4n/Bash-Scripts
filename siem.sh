@@ -31,7 +31,7 @@ function header () {
   title="$*"
   text=""
 
-  for i in $(seq ${#title} 59); do
+  for i in $(seq ${#title} 61); do
     text+="="
   done
   text+="[ $title ]====="
