@@ -14,17 +14,17 @@ colorOrange='\e[33m'
 # Functions
 function banner () {
 	echo -e "${colorOrange}
-	###########################################################################
-	##                                                                       ##
-	##          SIEM Installation script (ELK, Kibana, Beat)                 ##
-	##                                                                       ##
-	##                                                                       ##
-	##          Created by n0w4n                                             ##
-	##                                                                       ##
-	###########################################################################
-    
-     Version: ${versionNumber}
-     ${colorReset}"
+###########################################################################
+##                                                                       ##
+##          SIEM Installation script (ELK, Kibana, Beat)                 ##
+##                                                                       ##
+##                                                                       ##
+##          Created by n0w4n                                             ##
+##                                                                       ##
+###########################################################################
+   
+  Version: ${versionNumber}
+  ${colorReset}"
 }
 
 function header () {
