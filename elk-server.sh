@@ -94,8 +94,10 @@ function installKibana () {
 }
 
 function installNginx () {
+	header Installing Nginx
+	
 	# installing Nginx
-	header Installing nginx apache2-utils -y
+	sudo apt install nginx apache2-utils -y
 
 	# configuring virtual host
 	sudo bash -c "cat > /etc/nginx/sites-available/elk" << EOF
