@@ -121,6 +121,9 @@ server {
 EOF
 
 	# creating user + passwd file for web browser authentication
+	echo
+	echo "Creating new user (elkusr)"
+	echo "Give the new password for this user:"
 	sudo htpasswd -c /etc/nginx/.elkusersecret elkusr
 
 	# enabling Nginx on boot
@@ -173,7 +176,7 @@ filter {
 EOF
 	
 	# create elasticSearch output file
-	sudo bash -c "cat > /etc/logstash/conf.d/syslog-filter.conf" << EOF
+	sudo bash -c "cat > /etc/logstash/conf.d/output-elasticsearch.conf" << EOF
 output {
   elasticsearch { hosts => ["localhost:9200"]
     hosts => "localhost:9200"
