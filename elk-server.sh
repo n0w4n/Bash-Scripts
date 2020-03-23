@@ -278,7 +278,7 @@ function debugInstall () {
 
 # checks if there is an argument given
 if [[ $# -eq 0 ]]; then
-	echo "Give argument 'windows' or 'linux'"
+	echo "Give argument 'server', 'client' or debug"
 	exit 2
 fi
 
@@ -303,6 +303,8 @@ elif [[ ${1} == "client" ]]; then
 	commentsClient
 	exit
 elif [[ ${1} == "debug" ]]; then
+	debugInstall
+	exit
 else
 	echo "Valid arguments are 'server', 'client' or 'debug' only!"
 	exit 2
