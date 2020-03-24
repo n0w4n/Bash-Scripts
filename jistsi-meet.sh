@@ -19,6 +19,11 @@
 # - port 443 TCP (HTTPS)
 # - port 10000 - 20000 UDP
 
+# Global variables
+versionNumber="1.3"
+colorReset='\e[0m'
+colorOrange='\e[33m'
+
 function header () {
   title="$*"
   text=""
@@ -186,17 +191,19 @@ apt update
 apt install apt-transport-https
 
 # install Jitsi Meet package
-echo
-echo "During the installation proces you have to typ in the hostname."
-echo "You can enter here the FQDN: ${varFQDN}"
-echo
-echo "You also have to choose which certificate you want to use."
-echo "If you don't have your own certificate, choose to generate a new self-signed certificate."
-echo "You can later get a change to obtain a Let's Encrypt generated certificate."
-read 'Press enter to continue...'
+echo -e "${colorOrange}
+During the installation proces you have to typ in the hostname.
+You can enter here the FQDN: ${varFQDN}
+
+You also have to choose which certificate you want to use.
+If you don't have your own certificate, choose to generate a new self-signed certificate.
+You can later get a change to obtain a Let's Encrypt generated certificate.
+${colorReset}"
+read -p 'Press enter to continue...'
 apt install jitsi-meet -y
 
 # Choose if you want a Let's Encrypt certificate or own
+echo
 read -p "Do you want to generate a Let's Encrypt certificate? [y/n]" varCertificate
 if [[ $varCertificate =~ [yYnN] ]]; then
 	if [[ $varCertificate =~ [yY] ]]; then
