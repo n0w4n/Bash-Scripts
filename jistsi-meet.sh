@@ -150,34 +150,40 @@ function letsEncrypt () {
 # ==================== Running script from here =========================== #
 # ========================================================================= #
 
+# This script should be run as root
+if [[ "$EUID" -ne 0 ]]
+  then echo "Please run as root"
+  exit
+fi
+
 # Setting the FQDN
-read 'What will be the FQDN? ' varFQDN
+read -p 'What will be the FQDN? ' varFQDN
 
 # Set Firewall rules - UFW
 header Setting Firewall Rules
 # enabling ufw
-sudo ufw enable
+ufw enable
 # allow ssh (or else you can lock yourself out of the server)
-sudo ufw allow in ssh
+ufw allow in ssh
 # allow HTTP, HTTPS and UDP range 10000:20000
-sudo ufw allow in 80/tcp
-sudo ufw allow in 443/tcp
-sudo ufw allow in 10000:20000/udp
+ufw allow in 80/tcp
+ufw allow in 443/tcp
+ufw allow in 10000:20000/udp
 
 # Basic Jitsi Meet Install
 header Installing Jitsi Meet
 # adding FQDN in hosts file
-echo "127.0.0.1 localhost ${varFQDN}" | sudo tee -a /etc/hosts
+echo "127.0.0.1 localhost ${varFQDN}" | tee -a /etc/hosts
 
 # adding repository
-echo 'deb https://download.jitsi.org stable/' | sudo tee /etc/apt/sources.list.d/jitsi-stable.list
+echo 'deb https://download.jitsi.org stable/' | tee /etc/apt/sources.list.d/jitsi-stable.list
 wget -qO -  https://download.jitsi.org/jitsi-key.gpg.key | apt-key add -
 
 # update package lists
-sudo apt update
+apt update
 
 # install package foor https transport
-sudo apt install apt-transport-https
+apt install apt-transport-https
 
 # install Jitsi Meet package
 echo
@@ -188,10 +194,10 @@ echo "You also have to choose which certificate you want to use."
 echo "If you don't have your own certificate, choose to generate a new self-signed certificate."
 echo "You can later get a change to obtain a Let's Encrypt generated certificate."
 read 'Press enter to continue...'
-sudo apt install jitsi-meet -y
+apt install jitsi-meet -y
 
 # Choose if you want a Let's Encrypt certificate or own
-read "Do you want to generate a Let's Encrypt certificate? [y/n]" varCertificate
+read -p "Do you want to generate a Let's Encrypt certificate? [y/n]" varCertificate
 if [[ $varCertificate =~ [yYnN] ]]; then
 	if [[ $varCertificate =~ [yY] ]]; then
 		header Generating Let\'s Encrypt certificate
