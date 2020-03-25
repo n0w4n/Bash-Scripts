@@ -34,7 +34,7 @@ function installContainer () {
 	sudo ufw allow in 10000:20000/udp
 
 	# Clone this repository to your own computer.
-	git clone https://github.com/jitsi/docker-jitsi-meet ~/
+	git clone https://github.com/jitsi/docker-jitsi-meet ~/docker-jitsi-meet
 
 	# Create an .env file
 	cp ~/docker-jitsi-meet/env.example ~/docker-jitsi-meet/.env
@@ -66,7 +66,8 @@ function installContainer () {
 	fi
 
 	# Run docker-compose
-	sudo docker-compose -f ~/docker-jitsi-meet/docker-compose.yml up -d
+	cd ~/docker-jitsi-meet 
+	sudo docker-compose up -d
 
 	echo -e "${colorGreen}Access the web UI at https://${varFQDN}${colorReset}"
 }
@@ -75,6 +76,7 @@ function eraseContainers () {
 	# if for some reason the container is not working and you want to alter the env file
 	
 	# kills all containers
+	cd ~/docker-jitsi-meet
 	sudo docker-compose kill
 
 	# remove all containers (press Y when needed)
