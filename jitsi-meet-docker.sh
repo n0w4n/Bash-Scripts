@@ -51,7 +51,7 @@ if [[ $varCert =~ [yYnN] ]]; then
 		echo -e "${colorGreen}Enabling Let's Encrypt settings in .env file${colorReset}"
 		sed -i 's/HTTP_PORT=8000/HTTP_PORT=80/g' /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i 's/HTTPS_PORT=8443/HTTPS_PORT=443/g' /home/"${USER}"/docker-jitsi-meet/.env
-		sed -i "s/#PUBLIC_URL=https://meet.example.com/PUBLIC_URL=https://${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i "s/#PUBLIC_URL=https:\/\/meet.example.com/PUBLIC_URL=https:\/\/${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i 's/#ENABLE_LETSENCRYPT=1/ENABLE_LETSENCRYPT=1/g' /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i "s/#LETSENCRYPT_DOMAIN=meet.example.com/LETSENCRYPT_DOMAIN=${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i "s/#LETSENCRYPT_EMAIL=alice@atlanta.net/LETSENCRYPT_EMAIL=${varEmail}/g" /home/"${USER}"/docker-jitsi-meet/.env
