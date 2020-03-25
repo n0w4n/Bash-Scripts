@@ -4,9 +4,20 @@
 
 versionNumber="1.3"
 colorReset='\e[0m'
-colorRed='\e[30m'
-colorGreen='\e[31m'
+colorRed='\e[31m'
+colorGreen='\e[32m'
 colorOrange='\e[33m'
+
+# this functions is not implemented yet - is on the todo list
+function eraseContainers () {
+	# if for some reason the container is not working and you want to alter the env file
+	
+	# kills all containers
+	sudo docker-compose kill
+
+	# remove all containers (press Y when needed)
+	sudo docker system prune -a
+}
 
 # Setting Firewall rules
 sudo ufw enable
@@ -27,19 +38,24 @@ cp env.example .env
 mkdir -p ~/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody,jicofo,jvb}
 
 # Settings variables
-read -p "${colorOrange}What is the FQDN? ${colorReset}" varFQDN
-read -p "${colorOrange}What is the mailadres for corresponding? ${colorReset}" varEmail
+echo -e "${colorOrange}What is the FQDN? ${colorReset}"
+read varFQDN
+echo -e "${colorOrange}What is the mailadres for corresponding? ${colorReset}" 
+read varEmail
 
 # Setup certificate
-read -p "${colorOrange}Use Let's Encrypt certificate? ${colorReset}" varCert
+echo -e "${colorOrange}Use Let's Encrypt certificate? ${colorReset}" 
+read varCert
 if [[ $varCert =~ [yYnN] ]]; then
 	if [[ $varCert =~ [yY] ]]; then
 		echo -e "${colorGreen}Enabling Let's Encrypt settings in .env file${colorReset}"
-		sed -i 's/#HTTP_PORT=8000/HTTP_PORT=80/g' /home/"${USER}"/docker-jitsi-meet/.env
-		sed -i 's/#HTTPS_PORT=8443/HTTPS_PORT=443/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i 's/HTTP_PORT=8000/HTTP_PORT=80/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i 's/HTTPS_PORT=8443/HTTPS_PORT=443/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i "s/#PUBLIC_URL=https://meet.example.com/PUBLIC_URL=https://${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i 's/#ENABLE_LETSENCRYPT=1/ENABLE_LETSENCRYPT=1/g' /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i "s/#LETSENCRYPT_DOMAIN=meet.example.com/LETSENCRYPT_DOMAIN=${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
 		sed -i "s/#LETSENCRYPT_EMAIL=alice@atlanta.net/LETSENCRYPT_EMAIL=${varEmail}/g" /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i "s/#ENABLE_HTTP_REDIRECT=1/ENABLE_HTTP_REDIRECT=1/g" /home/"${USER}"/docker-jitsi-meet/.env
 	fi
 else
 	echo -e "${colorRed}That is not a valid option!${colorReset}"
