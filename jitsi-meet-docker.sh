@@ -2,7 +2,7 @@
 
 # this script will setup a Jitsi Meet docker container
 
-versionNumber="1.2"
+versionNumber="1.3"
 colorReset='\e[0m'
 colorRed='\e[30m'
 colorGreen='\e[31m'
@@ -28,19 +28,18 @@ mkdir -p ~/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody,jicofo,jvb}
 
 # Settings variables
 read -p "${colorOrange}What is the FQDN? ${colorReset}" varFQDN
-read -p '${colorOrange}What is the mailadres for corresponding? ${colorReset}' varEmail
+read -p "${colorOrange}What is the mailadres for corresponding? ${colorReset}" varEmail
 
 # Setup certificate
 read -p "${colorOrange}Use Let's Encrypt certificate? ${colorReset}" varCert
 if [[ $varCert =~ [yYnN] ]]; then
 	if [[ $varCert =~ [yY] ]]; then
-		echo "Enabling Let's Encrypt settings in .env file"
-		sed -i 's/#HTTP_PORT=8000/HTTP_PORT=80/g' /home/$USER/docker-jitsi-meet/.env
-		sed -i 's/#HTTPS_PORT=443/HTTPS_PORT=443/g' /home/$USER/docker-jitsi-meet/.env
-		sed -i 's/#HTTP_PORT=8000/HTTP_PORT=80/g' /home/$USER/docker-jitsi-meet/.env
-		sed -i 's/#ENABLE_LETSENCRYPT=1/ENABLE_LETSENCRYPT=1/g' /home/$USER/docker-jitsi-meet/.env
-		sed -i 's/#LETSENCRYPT_DOMAIN=meet.example.com/LETSENCRYPT_DOMAIN=${varFQDN}/g' /home/$USER/docker-jitsi-meet/.env
-		sed -i 's/#LETSENCRYPT_EMAIL=alice@atlanta.net/LETSENCRYPT_EMAIL=${varEmail}/g' /home/$USER/docker-jitsi-meet/.env
+		echo -e "${colorGreen}Enabling Let's Encrypt settings in .env file${colorReset}"
+		sed -i 's/#HTTP_PORT=8000/HTTP_PORT=80/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i 's/#HTTPS_PORT=8443/HTTPS_PORT=443/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i 's/#ENABLE_LETSENCRYPT=1/ENABLE_LETSENCRYPT=1/g' /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i "s/#LETSENCRYPT_DOMAIN=meet.example.com/LETSENCRYPT_DOMAIN=${varFQDN}/g" /home/"${USER}"/docker-jitsi-meet/.env
+		sed -i "s/#LETSENCRYPT_EMAIL=alice@atlanta.net/LETSENCRYPT_EMAIL=${varEmail}/g" /home/"${USER}"/docker-jitsi-meet/.env
 	fi
 else
 	echo -e "${colorRed}That is not a valid option!${colorReset}"
@@ -48,6 +47,7 @@ else
 fi
 
 # Run docker-compose
-sudo docker-compose up -d.
+cd /home/$USER/docker-jitsi-meet
+sudo docker-compose up -d
 
 echo -e "${colorGreen}Access the web UI at https://${varFQDN}${colorReset}"
