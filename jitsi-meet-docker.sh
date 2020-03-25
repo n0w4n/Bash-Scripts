@@ -2,6 +2,12 @@
 
 # this script will setup a Jitsi Meet docker container
 
+versionNumber="1.2"
+colorReset='\e[0m'
+colorRed='\e[30m'
+colorGreen='\e[31m'
+colorOrange='\e[33m'
+
 # Setting Firewall rules
 sudo ufw enable
 # allow ssh (or else you can lock yourself out of the server)
@@ -21,11 +27,11 @@ cp env.example .env
 mkdir -p ~/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody,jicofo,jvb}
 
 # Settings variables
-read -p 'What is the FQDN? ' varFQDN
-read -p 'What is the mailadres for corresponding? ' varEmail
+read -p "${colorOrange}What is the FQDN? ${colorReset}" varFQDN
+read -p '${colorOrange}What is the mailadres for corresponding? ${colorReset}' varEmail
 
 # Setup certificate
-read -p "Use Let's Encrypt certificate?" varCert
+read -p "${colorOrange}Use Let's Encrypt certificate? ${colorReset}" varCert
 if [[ $varCert =~ [yYnN] ]]; then
 	if [[ $varCert =~ [yY] ]]; then
 		echo "Enabling Let's Encrypt settings in .env file"
@@ -37,10 +43,11 @@ if [[ $varCert =~ [yYnN] ]]; then
 		sed -i 's/#LETSENCRYPT_EMAIL=alice@atlanta.net/LETSENCRYPT_EMAIL=${varEmail}/g' /home/$USER/docker-jitsi-meet/.env
 	fi
 else
-	echo "That is not a valid option!"
+	echo -e "${colorRed}That is not a valid option!${colorReset}"
 	exit
+fi
 
 # Run docker-compose
 sudo docker-compose up -d.
 
-echo "Access the web UI at https://${varFQDN}"
+echo -e "${colorGreen}Access the web UI at https://${varFQDN}${colorReset}"
