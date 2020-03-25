@@ -2,7 +2,7 @@
 
 # this script will setup a Jitsi Meet docker container
 
-versionNumber="1.4"
+versionNumber="1.4.1"
 colorReset='\e[0m'
 colorRed='\e[31m'
 colorGreen='\e[32m'
@@ -81,6 +81,10 @@ function eraseContainers () {
 
 	# remove all containers (press Y when needed)
 	sudo docker system prune -a
+
+	# remove git folder
+	cd
+	rm -rf ~/docker-jitsi-meet
 }
 
 # checks if there is an argument given
