@@ -34,11 +34,10 @@ function installContainer () {
 	sudo ufw allow in 10000:20000/udp
 
 	# Clone this repository to your own computer.
-	cd ~
-	git clone https://github.com/jitsi/docker-jitsi-meet && cd docker-jitsi-meet
+	git clone https://github.com/jitsi/docker-jitsi-meet ~/
 
 	# Create an .env file
-	cp env.example .env
+	cp ~/docker-jitsi-meet/env.example ~/docker-jitsi-meet/.env
 	mkdir -p ~/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody,jicofo,jvb}
 
 	# Settings variables
@@ -67,8 +66,7 @@ function installContainer () {
 	fi
 
 	# Run docker-compose
-	cd /home/$USER/docker-jitsi-meet
-	sudo docker-compose up -d
+	sudo docker-compose -f ~/docker-jitsi-meet/docker-compose.yml up -d
 
 	echo -e "${colorGreen}Access the web UI at https://${varFQDN}${colorReset}"
 }
