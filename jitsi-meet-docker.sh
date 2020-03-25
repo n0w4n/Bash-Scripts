@@ -3,16 +3,17 @@
 # this script will setup a Jitsi Meet docker container
 
 # Setting Firewall rules
-ufw enable
+sudo ufw enable
 # allow ssh (or else you can lock yourself out of the server)
-ufw allow in ssh
+sudo ufw allow in ssh
 # allow HTTP, HTTPS and UDP range 10000:20000
-ufw allow in 80/tcp
-ufw allow in 443/tcp
-ufw allow in 4443/tcp
-ufw allow in 10000:20000/udp
+sudo ufw allow in 80/tcp
+sudo ufw allow in 443/tcp
+sudo ufw allow in 4443/tcp
+sudo ufw allow in 10000:20000/udp
 
 # Clone this repository to your own computer.
+cd ~
 git clone https://github.com/jitsi/docker-jitsi-meet && cd docker-jitsi-meet
 
 # Create an .env file
