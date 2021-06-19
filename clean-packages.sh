@@ -3,7 +3,7 @@
 # created by n0w4n
 
 # Script to clean up installed packages after an exercise
-# Handy for a live system that is without VM snapshot ability
+# Handy for a system that is without VM snapshot ability
 # The script will lookup a list of all the packages installed from a certain point
 # Then it will purge some/all packages (after confirming with user)
 # Feel free to use and alter this script
